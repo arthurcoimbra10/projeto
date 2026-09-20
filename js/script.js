@@ -2,7 +2,6 @@
     'use strict';
     if (!document.getElementById('project-map')) return;
 
-    // Dados de demonstração. Substituir pelos projetos publicados no backend.
     const projects = [
         { id: 1, title: 'Mural para espaço cultural', category: 'Arte urbana', client: 'Espaço Vértice', location: 'Vila Madalena, São Paulo', coordinates: [-23.5566, -46.6864], budget: 'R$ 2.500 a R$ 4.000', deadline: 'Até 20 dias após a contratação', description: 'Criação e pintura de um mural de 18 m² na entrada de um espaço cultural. Buscamos uma arte colorida que represente a identidade e a diversidade do bairro.' },
         { id: 2, title: 'Fotografia para cafeteria', category: 'Fotografia', client: 'Café Aurora', location: 'Pinheiros, São Paulo', coordinates: [-23.5667, -46.6816], budget: 'R$ 800 a R$ 1.500', deadline: 'Até 7 dias após a contratação', description: 'Ensaio fotográfico do ambiente, dos cafés e dos pratos da casa. O projeto inclui 25 fotos editadas para o cardápio e as redes sociais.' },

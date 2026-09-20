@@ -68,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <button class="submit-button" type="submit">Cadastrar</button>
-                <p class="demo-note">Demonstração sem banco de dados. As contas são temporárias e ficam disponíveis apenas nesta sessão do navegador.</p>
                 <p class="auth-footer">Já tem uma conta? <a href="login.php">Faça Login</a></p>
             </form>
         </section>
