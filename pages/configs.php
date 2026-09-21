@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$conta['email'] = $email;
 			$conta['tipo_conta'] = $tipoConta;
 			$_SESSION['contas_demo'][$email] = $conta;
-			$_SESSION['usuario'] = ['nome' => $nome, 'email' => $email, 'tipo_conta' => $tipoConta];
+			$_SESSION['usuario'] = ['nome' => $nome, 'email' => $email, 'tipo_conta' => $tipoConta, 'foto' => $conta['foto'] ?? ''];
 			$usuario = $_SESSION['usuario'];
 			$aviso = 'Sua conta foi atualizada.';
 		}
@@ -68,6 +68,8 @@ $tipoConta = $usuario['tipo_conta'] === 'contratante' ? 'contratante' : 'agente_
 				<a href="inicio.php">Início</a>
 				<a href="perfil.php">Perfil</a>
 				<a href="chat.php">Chat</a>
+				<?php if (($usuario['tipo_conta'] ?? '') === 'contratante'): ?><a href="candidatos.php">Candidatos</a><?php endif; ?>
+				<?php if (($usuario['tipo_conta'] ?? '') !== 'contratante'): ?><a href="compromissos.php">Meus compromissos</a><?php endif; ?>
 				<a href="configs.php" aria-current="page">Configuração</a>
 			</nav>
 			<p class="home-account"><?= escapar($usuario['nome']) ?><br><?= $tipoConta === 'contratante' ? 'Contratante' : 'Agente criativo' ?></p>
@@ -109,7 +111,7 @@ $tipoConta = $usuario['tipo_conta'] === 'contratante' ? 'contratante' : 'agente_
 					<details class="terms-details">
 						<summary>Leia os termos de uso</summary>
 						<p>Ao usar o Arthere, você concorda em fornecer informações verdadeiras e respeitar os demais usuários.</p>
-						<p>Os projetos, mensagens e avaliações devem ser usados de forma responsável. Esta versão é uma demonstração e armazena os dados apenas durante a sessão.</p>
+						<p>Os projetos, mensagens e avaliações devem ser usados de forma responsável.</p>
 					</details>
 				</section>
 

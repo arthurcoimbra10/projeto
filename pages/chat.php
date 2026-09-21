@@ -15,12 +15,18 @@ function iniciais_chat($nome)
 	return substr($iniciais, 0, 2);
 }
 
+function chave_conversa($emailA, $emailB)
+{
+	return $emailA < $emailB ? $emailA . '|' . $emailB : $emailB . '|' . $emailA;
+}
+
 $usuario = $_SESSION['usuario'];
+$_SESSION['mensagens'] = isset($_SESSION['mensagens']) && is_array($_SESSION['mensagens']) ? $_SESSION['mensagens'] : [];
 $contatos = [];
 $contasDemo = isset($_SESSION['contas_demo']) && is_array($_SESSION['contas_demo']) ? $_SESSION['contas_demo'] : [];
-foreach ($contasDemo as $conta) {
-	if (is_array($conta) && isset($conta['email'], $conta['nome']) && $conta['email'] !== $usuario['email']) {
-		$contatos[] = $conta;
+foreach ($contasDemo as $email => $conta) {
+	if (is_array($conta) && isset($conta['nome']) && $email !== $usuario['email']) {
+		$contatos[] = ['email' => $email, 'nome' => $conta['nome'], 'foto' => $conta['foto'] ?? ''];
 	}
 }
 $contatoEmail = isset($_GET['contato']) && is_string($_GET['contato']) ? $_GET['contato'] : '';
@@ -32,23 +38,31 @@ foreach ($contatos as $contato) {
 	}
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && formulario_valido() && $contatoSelecionado && campo('mensagem') !== '') {
-	$chaveConversa = $usuario['email'] . '|' . $contatoSelecionado['email'];
+$destinatario = trim(campo('destinatario'));
+if ($destinatario === '' && $contatoSelecionado) {
+	$destinatario = $contatoSelecionado['email'];
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && formulario_valido() && $destinatario !== '' && trim(campo('mensagem')) !== '') {
+	$chaveConversa = chave_conversa($usuario['email'], $destinatario);
 	$_SESSION['mensagens'][$chaveConversa][] = [
 		'autor' => $usuario['email'],
 		'texto' => trim(campo('mensagem')),
+		'criado_em' => date('c'),
 	];
-	header('Location: chat.php?contato=' . urlencode($contatoSelecionado['email']));
+	header('Location: chat.php?contato=' . urlencode($destinatario));
 	exit;
 }
 
 $mensagens = [];
 if ($contatoSelecionado) {
-	$chaves = [$usuario['email'] . '|' . $contatoSelecionado['email'], $contatoSelecionado['email'] . '|' . $usuario['email']];
-	foreach ($chaves as $chave) {
-		$mensagensSalvas = isset($_SESSION['mensagens'][$chave]) && is_array($_SESSION['mensagens'][$chave]) ? $_SESSION['mensagens'][$chave] : [];
-		$mensagens = array_merge($mensagens, $mensagensSalvas);
-	}
+	$chaveConversa = chave_conversa($usuario['email'], $contatoSelecionado['email']);
+	$mensagens = isset($_SESSION['mensagens'][$chaveConversa]) && is_array($_SESSION['mensagens'][$chaveConversa]) ? $_SESSION['mensagens'][$chaveConversa] : [];
+	usort($mensagens, static function ($a, $b) {
+		$tempoA = isset($a['criado_em']) ? strtotime($a['criado_em']) : 0;
+		$tempoB = isset($b['criado_em']) ? strtotime($b['criado_em']) : 0;
+		return $tempoA <=> $tempoB;
+	});
 }
 ?>
 <!DOCTYPE html>
@@ -70,6 +84,8 @@ if ($contatoSelecionado) {
 				<a href="inicio.php">Início</a>
 				<a href="perfil.php">Perfil</a>
 				<a href="chat.php" aria-current="page">Chat</a>
+				<?php if (($usuario['tipo_conta'] ?? '') === 'contratante'): ?><a href="candidatos.php">Candidatos</a><?php endif; ?>
+				<?php if (($usuario['tipo_conta'] ?? '') !== 'contratante'): ?><a href="compromissos.php">Meus compromissos</a><?php endif; ?>
 				<a href="configs.php">Configuração</a>
 			</nav>
 			<p class="home-account"><?= escapar($usuario['nome']) ?><br><?= $usuario['tipo_conta'] === 'contratante' ? 'Contratante' : 'Agente criativo' ?></p>
@@ -84,13 +100,13 @@ if ($contatoSelecionado) {
 			<div class="contact-list">
 				<?php foreach ($contatos as $contato): ?>
 					<?php $classeContato = $contato['email'] === $contatoEmail ? 'contact-item is-selected' : 'contact-item'; ?>
-					<a class="<?= $classeContato ?>" href="chat.php?contato=<?= urlencode($contato['email']) ?>" aria-label="Abrir conversa com <?= escapar($contato['nome']) ?>">
-						<span class="chat-avatar">
+					<div class="<?= $classeContato ?>">
+						<a class="chat-avatar profile-avatar-link" href="perfil-publico.php?usuario=<?= urlencode($contato['email']) ?>" aria-label="Ver perfil de <?= escapar($contato['nome']) ?>">
 							<?php if (!empty($contato['foto'])): ?><img src="<?= escapar($contato['foto']) ?>" alt="">
 							<?php else: ?><?= escapar(iniciais_chat($contato['nome'])) ?><?php endif; ?>
-						</span>
-						<strong><?= escapar($contato['nome']) ?></strong>
-					</a>
+						</a>
+						<a class="contact-name-link" href="chat.php?contato=<?= urlencode($contato['email']) ?>" aria-label="Abrir conversa com <?= escapar($contato['nome']) ?>"><strong><?= escapar($contato['nome']) ?></strong></a>
+					</div>
 				<?php endforeach; ?>
 			</div>
 		</section>
@@ -100,7 +116,7 @@ if ($contatoSelecionado) {
 				<div class="conversation-placeholder"><p>Você não possui nenhuma conversa</p></div>
 			<?php elseif ($contatoSelecionado): ?>
 				<header class="conversation-header">
-					<span class="chat-avatar"><?php if (!empty($contatoSelecionado['foto'])): ?><img src="<?= escapar($contatoSelecionado['foto']) ?>" alt=""> <?php else: ?><?= escapar(iniciais_chat($contatoSelecionado['nome'])) ?><?php endif; ?></span>
+					<a class="chat-avatar profile-avatar-link" href="perfil-publico.php?usuario=<?= urlencode($contatoSelecionado['email']) ?>" aria-label="Ver perfil de <?= escapar($contatoSelecionado['nome']) ?>"><?php if (!empty($contatoSelecionado['foto'])): ?><img src="<?= escapar($contatoSelecionado['foto']) ?>" alt=""> <?php else: ?><?= escapar(iniciais_chat($contatoSelecionado['nome'])) ?><?php endif; ?></a>
 					<h2><?= escapar($contatoSelecionado['nome']) ?></h2>
 				</header>
 				<div class="message-list">
@@ -111,6 +127,7 @@ if ($contatoSelecionado) {
 				</div>
 				<form class="message-form" method="post" action="chat.php?contato=<?= urlencode($contatoSelecionado['email']) ?>">
 					<input type="hidden" name="csrf" value="<?= escapar($_SESSION['csrf']) ?>">
+					<input type="hidden" name="destinatario" value="<?= escapar($contatoSelecionado['email']) ?>">
 					<label class="visually-hidden" for="mensagem">Mensagem</label>
 					<input id="mensagem" name="mensagem" type="text" placeholder="Escreva uma mensagem" autocomplete="off" required>
 					<button class="submit-button" type="submit">Enviar</button>
