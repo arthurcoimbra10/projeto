@@ -40,9 +40,9 @@ $usuario = $_SESSION['usuario'];
         <aside class="home-sidebar">
             <nav class="home-nav" aria-label="Menu principal">
                 <a href="inicio.php" aria-current="page">Início</a>
-                <button type="button" disabled title="Em breve">Perfil <span class="visually-hidden">(em breve)</span></button>
-                <button type="button" disabled title="Em breve">Chat <span class="visually-hidden">(em breve)</span></button>
-                <button type="button" disabled title="Em breve">Configuração <span class="visually-hidden">(em breve)</span></button>
+                <a href="perfil.php">Perfil</a>
+                <a href="chat.php">Chat</a>
+                <a href="configs.php">Configuração</a>
             </nav>
             <p class="home-account"><?= escapar($usuario['nome']) ?><br><?= $usuario['tipo_conta'] === 'contratante' ? 'Contratante' : 'Agente criativo' ?></p>
             <form class="logout-form" action="sair.php" method="post">

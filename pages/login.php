@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" name="senha" placeholder="Senha" autocomplete="current-password" required>
                 </div>
 
+                <p class="demo-note">Demonstração: cadastre-se primeiro. As contas ficam disponíveis apenas nesta sessão do navegador. Recuperação de senha indisponível.</p>
                 <button class="submit-button" type="submit">Entrar</button>
 
                 <p class="auth-footer">Não tem uma conta? <a href="cadastro.php">Cadastre-se</a></p>

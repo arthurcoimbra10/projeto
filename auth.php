@@ -1,4 +1,5 @@
 <?php
+// Contas temporárias de demonstração: existem apenas nesta sessão, sem banco.
 session_start();
 header('Cache-Control: no-store');
 
